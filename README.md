@@ -113,9 +113,66 @@ The application referred to is our item catalog app, which we created [here](htt
 
   3. Enable *mod_wsgi* ```sudo a2enmod wsgi```.
 
-11. Install and configure PostgreSQL [source](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-16-04).
+11. Install git [source](https://www.digitalocean.com/community/tutorials/how-to-install-git-on-ubuntu-16-04)
 
-  1. Install some neccessary Python packages for interacting with PostgreSQL with the command ```sudo apt-get install libpq-dev python-dev```.
+  1. Type the command ```sudo apt-get install git```.
+
+  2. Configure your username for accurate commit statements: ```git config --global user.name "Your User Name"```.
+
+  3. Configure your email for accuate commit statements: ```git config --global user.email "youremail@domain.com"```
+
+  **note**: to check that your configs are working, type in the command ```git config --list``` and it will show your user.name and user.email configurations.
+
+12. Clone the Catalog application from Github
+
+  1. Type in the command ```cd /var/www```.  Then create the catalog directory with the command ```sudo mkdir catalog```.
+
+  2. Change owner for the *catalog* folder with the command ```sudo chown -R grader:grader catalog```.
+
+  3. Move inside that newly created folder ```cd /catalog``` and clone the catalog repository from Github with the command ```git clone https://github.com/hackinhukk/ItemCatalogUDC.git catalog```
+
+  4. Make a *catalog.wsgi* file to run the application over the *mod_wsgi* application with the command ```nano catalog.wsgi```.  The file contents should look like this:
+  ```
+  import sys
+  import logging
+  logging.basicConfig(stream=sys.stderr)
+  sys.path.insert(0,"/var/www/catalog/")
+
+  from catalog import app as application
+  application.secret_key = 'super_secret_key'
+  ```
+
+  5. Rename *application.py* to **init.py** with the command ```mv application.py __init__.py```
+
+13. Install the Virtual Environment [source] (https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
+
+  1. Install the virtual environment with the command ```sudo pip install virtualenv```.
+
+  2. Create a new virtual environment with the command ```sudo virtualenv venv```.
+
+  3. Activate the virtual environment with the command ```source venv/bin/activate```.
+
+  4. In order to change the permissions, type in ```sudo chmod -R 777 venv```.
+
+14. Install Flask and other dependencies [source](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
+
+  1. Install pip with the command ```sudo apt-get install python-pip```.
+
+  2. If virtualenv isn't installed, use the following pip command to install it ```sudo pip install virtualenv```.
+
+  3. Go to the *catalog* directory with ```cd /var/www/catalog```.  Then create a new virtual environment by typing in ```sudo virtualenv venv```.
+
+  4. Activate the virtual environment with the command ```source venv/bin/activate```.
+
+  5. Change the virtual environment folder permissions with the command ```sudo chmod -R 777 venv```.
+
+  6. Install Flask with the following command: ```pip install Flask```.
+
+  7. Install all the other project's dependencies ```pip install sqlalchemy httplib2 oauth2client psycopg2```.
+
+15. Install and configure PostgreSQL [source](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-16-04).
+
+  1. Install some necessary Python packages for interacting with PostgreSQL with the command ```sudo apt-get install libpq-dev python-dev```.
 
   2. Install PostgreSQL with the command ```sudo apt-get install postgresql postgresql-contrib```.
 
@@ -129,4 +186,16 @@ The application referred to is our item catalog app, which we created [here](htt
 
   7. Create the catalog database owned by the *catalog* user: ```CREATE DATABASE catalog WITH OWNER catalog;```.
 
-  8.
+  8. Connect to the DB with the command ```\c catalog```.
+
+  9. Revoke all rights with the command ```REVOKE ALL ON SCHEMA public FROM public;```.
+
+  10. Limit the permissions so only the *catalog* user can create tables with the command ```GRANT ALL ON SCHEMA public TO catalog;```.
+
+  11. Log out from PostgreSQL with the command ```\q```.  Then type ```exit``` to return to the *grader* user.
+(TNT STOPPED HERE then went to git and onwards)
+  12.  In your __init__.py and database_setup.py files change the create engine line to ```engine = create_engine('postgresql://catalog:catalogpasswordname@localhost/catalog')```
+
+  13. Setup the database with the command ```python /var/www/catalog/catalog/setup_database.py```.
+
+  14. To block remote connections to the database, we have to open the follow file and edit it with the command ```sudo nano /etc/postgresql/9.5/main/pg_hba.conf``` and edit it, if necessary, to make it look like:.
