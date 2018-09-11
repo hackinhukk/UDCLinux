@@ -129,7 +129,7 @@ The application referred to is our item catalog app, which we created [here](htt
 
   2. Change owner for the *catalog* folder with the command ```sudo chown -R grader:grader catalog```.
 
-  3. Move inside that newly created folder ```cd /catalog``` and clone the catalog repository from Github with the command ```git clone https://github.com/hackinhukk/ItemCatalogUDC.git catalog```
+  3. Move inside that newly created folder ```cd catalog``` and clone the catalog repository from Github with the command ```git clone https://github.com/hackinhukk/ItemCatalog.git catalog```
 
   4. Make a *catalog.wsgi* file to run the application over the *mod_wsgi* application with the command ```nano catalog.wsgi```.  The file contents should look like this:
   ```
@@ -142,35 +142,65 @@ The application referred to is our item catalog app, which we created [here](htt
   application.secret_key = 'super_secret_key'
   ```
 
-  5. Rename *application.py* to **init.py** with the command ```mv application.py __init__.py```
+  5. Go inside the /var/www/catalog/catalog directory.  Rename *main.py* to **init.py** with the command ```mv main.py __init__.py```
 
-13. Install the Virtual Environment [source] (https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
 
-  1. Install the virtual environment with the command ```sudo pip install virtualenv```.
+13. Install Flask and other dependencies [source](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
 
-  2. Create a new virtual environment with the command ```sudo virtualenv venv```.
+  1. Go to the /var/www/catalog/ directory.  Install the virtualenv package with the following command ```sudo pip install virtualenv```.
+
+  2. Go to the *catalog* directory with ```cd /var/www/catalog```.  Then create a new virtual environment by typing in ```sudo virtualenv venv```.
 
   3. Activate the virtual environment with the command ```source venv/bin/activate```.
 
-  4. In order to change the permissions, type in ```sudo chmod -R 777 venv```.
+  4. Change the virtual environment folder permissions with the command ```sudo chmod -R 777 venv```.
 
-14. Install Flask and other dependencies [source](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
+  5. Install Flask with the following command: ```pip install Flask```.
 
-  1. Install pip with the command ```sudo apt-get install python-pip```.
+  6. Install all the other project's dependencies ```pip install flask sqlalchemy requests httplib2 oauth2client psycopg2-binary```.
 
-  2. If virtualenv isn't installed, use the following pip command to install it ```sudo pip install virtualenv```.
+14. Update path of client_secrets.json file
 
-  3. Go to the *catalog* directory with ```cd /var/www/catalog```.  Then create a new virtual environment by typing in ```sudo virtualenv venv```.
+  1. Type in the command ```nano __init__.py```
 
-  4. Activate the virtual environment with the command ```source venv/bin/activate```.
+  2. Change client_secrets.json path to ```/var/www/catalog/catalog/client_secrets.json```.
 
-  5. Change the virtual environment folder permissions with the command ```sudo chmod -R 777 venv```.
+15. Setup and enable a new virtual host
 
-  6. Install Flask with the following command: ```pip install Flask```.
+  1. Create a virtual host config file with the command ```sudo nano /etc/apache2/sites-available/catalog.conf```.
 
-  7. Install all the other project's dependencies ```pip install sqlalchemy httplib2 oauth2client psycopg2```.
+  2. Paste in the following lines of code:
+```
+<VirtualHost *:80>
+    ServerName 172.26.9.101
+    ServerAlias 18.221.52.69
+    ServerAdmin admin@172.26.9.101
+    WSGIDaemonProcess catalog python-path=/var/www/catalog:/var/www/catalog/venv/lib/python2.7/site-packages
+    WSGIProcessGroup catalog
+    WSGIScriptAlias / /var/www/catalog/catalog.wsgi
+    <Directory /var/www/catalog/catalog/>
+        Order allow,deny
+        Allow from all
+    </Directory>
+    Alias /static /var/www/catalog/catalog/static
+    <Directory /var/www/catalog/catalog/static/>
+        Order allow,deny
+        Allow from all
+    </Directory>
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    LogLevel warn
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+```
 
-15. Install and configure PostgreSQL [source](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-16-04).
+  3. Disable the default virtual host with the command ```sudo a2dissite 000-default.conf```.
+
+  4. Enable the catalog app virtual host by typing in ```sudo a2ensite catalog.conf```.
+
+  5. To make these Apache2 changes live, we need to reload Apache with the command ```sudo service apache2 reload```.
+
+
+16. Install and configure PostgreSQL [source](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-16-04).
 
   1. Install some necessary Python packages for interacting with PostgreSQL with the command ```sudo apt-get install libpq-dev python-dev```.
 
@@ -196,6 +226,15 @@ The application referred to is our item catalog app, which we created [here](htt
 (TNT STOPPED HERE then went to git and onwards)
   12.  In your __init__.py and database_setup.py files change the create engine line to ```engine = create_engine('postgresql://catalog:catalogpasswordname@localhost/catalog')```
 
-  13. Setup the database with the command ```python /var/www/catalog/catalog/setup_database.py```.
+  13. Setup the database with the command ```python /var/www/catalog/catalog/database_setup.py```.  Then follow it with the command ```python /var/www/catalog/catalog/catalogitems.py```.
 
-  14. To block remote connections to the database, we have to open the follow file and edit it with the command ```sudo nano /etc/postgresql/9.5/main/pg_hba.conf``` and edit it, if necessary, to make it look like:.
+  14. To block remote connections to the database, we have to open the follow file and edit it with the command ```sudo nano /etc/postgresql/9.5/main/pg_hba.conf``` and edit it, if necessary, to make it look like:
+
+  ```
+  local    all                 postgres                                peer
+  local    all                 all                                     peer
+  host     all                 all               127.0.0.1/32          md5
+  host     all                 all               ::1/128               md5
+  ```
+
+  15. Type in the command ```sudo service apache2 restart```.  Your web server should be viewable at the address *18.221.52.69*
