@@ -7,6 +7,14 @@ You will take a baseline installation of a Linux distribution on a virtual machi
 
 The application referred to is our item catalog app, which we created [here](https://github.com/hackinhukk/ItemCatalogUDC/tree/master/app)
 
+## Useful Information
+
+IP address: 18.221.52.69
+
+Application URL: http://18.221.52.69
+
+Accessible SSH port: 2200.
+
 
 ## Step by step walkthrough
 
@@ -18,7 +26,7 @@ The application referred to is our item catalog app, which we created [here](htt
 
   3. Type in ```chmod 400 ~/.ssh/Lightsail-key.pem``` to the terminal.
 
-  4. Run the command ```ssh -i ~/.ssh/Lightsail-key.pem ubuntu@18.191.210.24```.
+  4. Run the command ```ssh -i ~/.ssh/Lightsail-key.pem ubuntu@18.221.52.69```.
 
 
 2. Update all currently installed packages
@@ -45,7 +53,7 @@ The application referred to is our item catalog app, which we created [here](htt
 
   2. Run ```sudo service ssh restart```.
 
-  3. Now the way you can remotely login into the VM through ssh is by typing the command ```ssh -i ~/.ssh/LightsailDefaultPrivateKey-us-east-2.pem -p 2200 ubuntu@18.191.210.24```.  
+  3. Now the way you can remotely login into the VM through ssh is by typing the command ```ssh -i ~/.ssh/LightsailDefaultPrivateKey-us-east-2.pem -p 2200 ubuntu@18.221.52.69```.  
 
   **Note:  You have to add and save port 2200** with *Application* as *Custom* and *Protocol* as *TCP*.  This is found within the Networking section of the specific Amazon Lightsail instance.
 
@@ -83,7 +91,7 @@ The application referred to is our item catalog app, which we created [here](htt
 
   7. Type in ```sudo service ssh restart``` to reload SSH
 
-  8.  You can now login as the *grader* user using the command: ```ssh -i ~/.ssh/udacity_grader_key.rsa -p 2200 grader@18.223.125.137```
+  8.  You can now login as the *grader* user using the command: ```ssh -i ~/.ssh/udacity_grader_key.rsa -p 2200 grader@18.221.52.69```
 
 7. Disable ssh login for root user and enforce key based authentication.
 
